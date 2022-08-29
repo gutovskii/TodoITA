@@ -76,12 +76,7 @@ namespace TodoITA.WebApi.Controllers
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var isCategoryDeleted = await _todoCategoryService.DeleteTodoCategoryAsync(id);
-
-            if (!isCategoryDeleted)
-            {
-                return NotFound();
-            }
-
+            if (!isCategoryDeleted) return NotFound();
             return Ok();
         }
     }
