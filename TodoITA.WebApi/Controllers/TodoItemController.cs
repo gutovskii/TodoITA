@@ -7,6 +7,8 @@ using TodoITA.BLL.Services.Interfaces;
 using TodoITA.DataAccess.Entities;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.SignalR;
+using TodoITA.WebApi.Hubs;
 
 namespace TodoITA.WebApi.Controllers
 {
@@ -16,10 +18,13 @@ namespace TodoITA.WebApi.Controllers
     {
         private readonly ITodoItemService _todoItemService;
         private readonly IMapper _mapper;
-        public TodoItemController(ITodoItemService todoItemService, IMapper mapper)
+        private readonly IHubContext<TodoHub> _hubContext;
+
+        public TodoItemController(ITodoItemService todoItemService, IMapper mapper, IHubContext<TodoHub> hubContext)
         {
             _todoItemService = todoItemService;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -33,6 +38,7 @@ namespace TodoITA.WebApi.Controllers
 
             var todoItemViewModel = _mapper.Map<TodoItemViewModel>(todoItemToCreate);
 
+            await _hubContext.Clients.All.SendAsync("ItemCreated", todoItemViewModel);
             return CreatedAtRoute("GetCategoryById", new { Id = todoItemViewModel.Id }, todoItemViewModel);
         }
 
@@ -52,6 +58,7 @@ namespace TodoITA.WebApi.Controllers
 
             var todoItemToUpdateViewModel = _mapper.Map<TodoItemViewModel>(todoItemToUpdate);
 
+            await _hubContext.Clients.All.SendAsync("ItemUpdated", todoItemToUpdateViewModel);
             return Ok(todoItemToUpdateViewModel);
         } 
 
@@ -66,6 +73,7 @@ namespace TodoITA.WebApi.Controllers
 
             var todoItemToUpdateViewModel = _mapper.Map<TodoItemViewModel>(todoItemToUpdate);
 
+            await _hubContext.Clients.All.SendAsync("ItemUpdated", todoItemToUpdateViewModel);
             return Ok(todoItemToUpdateViewModel);
         }
 
@@ -75,6 +83,8 @@ namespace TodoITA.WebApi.Controllers
         {
             var isItemDeleted = await _todoItemService.DeleteTodoItemAsync(id);
             if (!isItemDeleted) return NotFound();
+
+            await _hubContext.Clients.All.SendAsync("ItemDeleted", id);
             return Ok();
         }
     }

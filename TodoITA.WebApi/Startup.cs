@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TodoITA.WebApi.Hubs;
 using TodoITA.WebApi.StartupExtensions;
 
 namespace TodoITA.WebApi
@@ -38,6 +39,7 @@ namespace TodoITA.WebApi
                         .AllowAnyHeader();
                 });
             });
+            services.AddSignalR();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,6 +60,7 @@ namespace TodoITA.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<TodoHub>("/todohub");
             });
         }
     }
